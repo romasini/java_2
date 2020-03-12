@@ -26,6 +26,7 @@ public class TestThread {
         calcArr(arr, 0);
         endTime = System.currentTimeMillis();
         System.out.println("Without thread :" + (endTime-startTime));
+
     }
 
     private static void methodWithThread() throws InterruptedException {
