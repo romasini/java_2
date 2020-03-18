@@ -77,18 +77,17 @@ public class ClientHandler {
     private void authentication() throws IOException {
 
             while (true){
-                String message =  in.readUTF();
+                 String message =  in.readUTF();
                 if(message.startsWith("/auth")){
                     String[] messageParts = message.split("\\s+", 3);
                     String userlogin = messageParts[1];
                     String password = messageParts[2];
                     String userName = networkServer.getAuthService().getUserNameByLoginAndPassword(userlogin, password);
-
                     if(userName==null){
+                        System.out.println("Неверный логин и пароль");
                         sendMessage("Неверный логин и пароль");
                     }else {
                         nickName = userName;
-                        //login = userlogin;
                         networkServer.broadcastMessage(nickName + " зашел в чат", this);
                         sendMessage("/auth " + nickName);//отправим клиенту, что он авторизовался
                         networkServer.subscribe(this);//добавим в список авторизованных

@@ -1,5 +1,6 @@
 package ru.geekbrains.java2.client;
 
+import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,17 +10,12 @@ import javafx.stage.Stage;
 import ru.geekbrains.java2.client.authform.ClientAuthController;
 import ru.geekbrains.java2.client.chatform.ClientChatController;
 
-import javax.swing.*;
 import java.io.IOException;
 
 public class ClientController {
 
     private final NetworkService networkService;
-    private final ClientAuthController authDialog;
-    private final ClientChatController clientChat;
     private final Stage primaryStage;
-    private final Parent rootAuth;
-    private final Parent rootChat;
     private String nickname;
 
     public ClientController(String serverHost, int serverPort, Stage primaryStage) throws IOException {
@@ -27,41 +23,56 @@ public class ClientController {
         this.networkService = new NetworkService(serverHost, serverPort);
         this.primaryStage = primaryStage;
 
-        FXMLLoader loaderAuth = new FXMLLoader();
-        this.rootAuth = loaderAuth.load(getClass().getResourceAsStream("ClientAuthForm.fxml"));
-        this.authDialog  = loaderAuth.getController();
-        this.authDialog.setController(this);
-
-        FXMLLoader loaderChat = new FXMLLoader();
-        this.rootChat = loaderChat.load(getClass().getResourceAsStream("ClientChatForm.fxml"));
-        this.clientChat  = loaderChat.getController();
-        this.clientChat.setController(this);
     }
 
     public void runApplication() throws IOException {
+        openAuth();
         connectToServer();
         runAuthProcess();
     }
 
-    private void runAuthProcess() {
+    private void runAuthProcess() throws IOException {
         networkService.setSuccessfulAuthEvent(nickname -> {
+            System.out.println("new");
             setUserName(nickname);
             openChat();
         });
+
+    }
+
+    private void openChat() throws IOException {
+
+        FXMLLoader loaderChat = new FXMLLoader();
+        Parent rootChat = loaderChat.load(getClass().getResourceAsStream("chatform/ClientChatForm.fxml"));
+        ClientChatController clientChat  = loaderChat.getController();
+        clientChat.setController(this);
+
+        Scene scene = new Scene(rootChat, 600, 400);
+        primaryStage.setTitle("Супер чат :" + nickname);
+        primaryStage.setScene(scene);
+        primaryStage.setIconified(false);
+        primaryStage.show();
+        primaryStage.setOnCloseRequest(e->{
+            System.exit(0);
+        });
+
+        networkService.setMessageHandler(clientChat::appendMessage);
+    }
+
+    private void openAuth() throws IOException {
+        FXMLLoader loaderAuth = new FXMLLoader();
+        Parent rootAuth = loaderAuth.load(getClass().getResourceAsStream("authform/ClientAuthForm.fxml"));
+        ClientAuthController authDialog  = loaderAuth.getController();
+        authDialog.setController(this);
 
         Scene scene = new Scene(rootAuth, 500, 230);
         primaryStage.setTitle("Авторизация");
         primaryStage.setScene(scene);
         primaryStage.setIconified(false);
         primaryStage.show();
-        primaryStage.setOnCloseRequest();
-
-    }
-
-    private void openChat() {
-        //authDialog.dispose();
-        //networkService.setMessageHandler(clientChat::appendMessage);
-        //clientChat.setVisible(true);
+        primaryStage.setOnCloseRequest(e->{
+            System.exit(0);
+        });
     }
 
     private void setUserName(String nickname) {

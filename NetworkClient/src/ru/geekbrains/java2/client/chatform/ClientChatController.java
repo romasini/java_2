@@ -11,6 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import ru.geekbrains.java2.client.ClientController;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,19 +49,19 @@ public class ClientChatController {
 
     public void initialize(){
 
-        contactByMessage.put("Bobby","");
-        contactByMessage.put("Dobby","");
-        contactByMessage.put("Robby","");
-        contactByMessage.put("Mobby","");
-
-        List<String> contactArray = new ArrayList<>();
-        contactByMessage.forEach((contact,contactMessage)->{
-            contactArray.add(contact);
-        });
-        ObservableList<String> contacts = FXCollections.observableArrayList(contactArray);
-        contactList.setItems(contacts);
-        contactList.getSelectionModel().select(0);
-        currentContact = contactList.getSelectionModel().getSelectedItem();
+//        contactByMessage.put("Bobby","");
+//        contactByMessage.put("Dobby","");
+//        contactByMessage.put("Robby","");
+//        contactByMessage.put("Mobby","");
+//
+//        List<String> contactArray = new ArrayList<>();
+//        contactByMessage.forEach((contact,contactMessage)->{
+//            contactArray.add(contact);
+//        });
+//        ObservableList<String> contacts = FXCollections.observableArrayList(contactArray);
+//        contactList.setItems(contacts);
+//        contactList.getSelectionModel().select(0);
+//        currentContact = contactList.getSelectionModel().getSelectedItem();
 
     }
 
@@ -73,5 +74,10 @@ public class ClientChatController {
 
     public void setController(ClientController controller) {
         this.controller = controller;
+    }
+
+    public void appendMessage(String message) {
+        chatArea.appendText(message);
+        chatArea.appendText(System.lineSeparator());
     }
 }
