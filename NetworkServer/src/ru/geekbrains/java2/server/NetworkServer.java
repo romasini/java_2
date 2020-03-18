@@ -18,7 +18,6 @@ public class NetworkServer {
     private final AuthService authService;
 
     public NetworkServer(int port){
-
         this.port = port;
         this.authService = new BaseAuthService();
     }
@@ -29,10 +28,11 @@ public class NetworkServer {
             System.out.println("Сервер запущен на порту " + port);
             authService.start();
             while (true){
-                System.out.println("Ждем клиента");
+                System.out.println("Ждем клиента...");
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Клиент подключился...");
-                clients.add(new ClientHandler(this, clientSocket));
+                //clients.add(new ClientHandler(this, clientSocket));
+                createClientHandler(clientSocket);
             }
         }catch (IOException e){
             System.out.println("Ошибка при работе с сервером");
@@ -43,14 +43,43 @@ public class NetworkServer {
 
     }
 
+    private void createClientHandler(Socket clientSocket) {
+        ClientHandler clientHandler = new ClientHandler(this, clientSocket);
+        clientHandler.run();
+    }
+
     public AuthService getAuthService() {
         return authService;
     }
 
-    public synchronized void broadcastMessage(String message) throws IOException {
-        for (ClientHandler client: clients) {
-                client.sendMessage(message);
+    public synchronized void broadcastMessage(String message, ClientHandler owner) throws IOException {
+        if(message.startsWith("/w ")){
+
+            String[] messageParts = message.split("\\s+");
+            String messageReceiver = messageParts[1];
+            ClientHandler clientReceiver = null;
+            for (ClientHandler client: clients) {
+                if(client.getNickName().equals(messageReceiver)){
+                    clientReceiver = client;
+                    break;
+                }
+            }
+            if(clientReceiver==null){
+                owner.sendMessage("Пользователь не в сети");
+            }else {
+                message.replaceFirst(messageParts[0] + " " + messageReceiver, "").trim();
+                clientReceiver.sendMessage(String.format("%s : %s", owner.getNickName(), message));
+            }
+            return;
         }
+
+        for (ClientHandler client: clients) {
+            if(client!=owner) client.sendMessage(String.format("%s : %s", owner.getNickName(), message));
+        }
+    }
+
+    public synchronized void subscribe(ClientHandler clientHandler) {
+        clients.add(clientHandler);
     }
 
     public synchronized void unsubscribe(ClientHandler clientHandler) {

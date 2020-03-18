@@ -14,15 +14,23 @@ public class ClientHandler {
     private  DataOutputStream out;
 
     private String nickName;
+    //private String login;
+
+    public String getNickName() {
+        return nickName;
+    }
+
+//    public String getLogin() {
+//        return login;
+//    }
 
     public ClientHandler(NetworkServer networkServer, Socket socket)  {
-
         this.networkServer = networkServer;
         this.clientSocket = socket;
+    }
 
-        doHandle(socket);
-
-
+    public void run(){
+        doHandle(clientSocket);
     }
 
     private void doHandle(Socket socket) {
@@ -35,11 +43,11 @@ public class ClientHandler {
                     authentication();
                     readMessages();
                 }catch (IOException e){
-                    System.out.println("Ошибка соединения");
+                    System.out.println("Соединение с клиентом " + nickName + " было закрыто!");
                 } finally {
                     closeConnection();
                 }
-            });
+            }).start();
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -61,7 +69,8 @@ public class ClientHandler {
                 if("/end".equals(message)){
                     return;
                 }
-                networkServer.broadcastMessage(nickName + ": "+ message);
+
+                networkServer.broadcastMessage(message, this);
         }
     }
 
@@ -71,15 +80,18 @@ public class ClientHandler {
                 String message =  in.readUTF();
                 if(message.startsWith("/auth")){
                     String[] messageParts = message.split("\\s+", 3);
-                    String login = messageParts[1];
+                    String userlogin = messageParts[1];
                     String password = messageParts[2];
-                    String userName = networkServer.getAuthService().getUserNameByLoginAndPassword(login, password);
+                    String userName = networkServer.getAuthService().getUserNameByLoginAndPassword(userlogin, password);
 
                     if(userName==null){
                         sendMessage("Неверный логин и пароль");
                     }else {
                         nickName = userName;
-                        networkServer.broadcastMessage(nickName + " зашел в чат");
+                        //login = userlogin;
+                        networkServer.broadcastMessage(nickName + " зашел в чат", this);
+                        sendMessage("/auth " + nickName);//отправим клиенту, что он авторизовался
+                        networkServer.subscribe(this);//добавим в список авторизованных
                         break;
                     }
 

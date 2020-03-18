@@ -2,7 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<AnchorPane id="mainPane" fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: lightyellow;" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="lesson4.homeWork4.ClientChatController">
+<AnchorPane id="mainPane" fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: lightyellow;" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.java2.client.chatform.ClientChatController">
    <children>
       <Button id="sendButton" fx:id="sendButton" defaultButton="true" layoutX="483.0" layoutY="361.0" mnemonicParsing="false" onAction="#sendBtnAction" prefHeight="25.0" prefWidth="107.0" style="-fx-background-color: lightgreen;" text="Отправить" textFill="#1a00ff" wrapText="true" AnchorPane.bottomAnchor="14.0" AnchorPane.rightAnchor="10.0" />
       <TextField fx:id="enteredText" layoutX="110.0" layoutY="360.0" prefHeight="27.0" prefWidth="365.0" promptText="введите сообщение" style="-fx-border-color: lightgreen;" AnchorPane.bottomAnchor="13.0" AnchorPane.leftAnchor="110.0" AnchorPane.rightAnchor="125.0" />

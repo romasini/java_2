@@ -53,12 +53,12 @@ public class BaseAuthService implements AuthService{
 
     @Override
     public void start() {
-        System.out.println("Сервис аутент запущен");
+        System.out.println("Сервис аутентификации запущен");
 
     }
 
     @Override
     public void stop() {
-        System.out.println("Сервис остановлен");
+        System.out.println("Сервис аутентификации остановлен");
     }
 }

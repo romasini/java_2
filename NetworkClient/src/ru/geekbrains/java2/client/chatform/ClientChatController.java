@@ -1,4 +1,4 @@
-package ru.geekbrains.java2.client;
+package ru.geekbrains.java2.client.chatform;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,6 +9,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
+import ru.geekbrains.java2.client.ClientController;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ public class ClientChatController {
 
     private Map<String, String> contactByMessage = new HashMap<>();
     private String currentContact;
+    private ClientController controller;
 
     public void sendBtnAction(ActionEvent actionEvent) {
         String entString = enteredText.getText();
@@ -67,5 +69,9 @@ public class ClientChatController {
         if (currentContact!=null){
             chatArea.setText(contactByMessage.get(currentContact));
         }
+    }
+
+    public void setController(ClientController controller) {
+        this.controller = controller;
     }
 }
