@@ -10,23 +10,19 @@ import java.net.Socket;
 public class ClientHandler {
     private final NetworkServer networkServer;
     private final Socket clientSocket;
+
     private  DataInputStream in;
     private  DataOutputStream out;
 
     private String nickName;
-    //private String login;
-
-    public String getNickName() {
-        return nickName;
-    }
-
-//    public String getLogin() {
-//        return login;
-//    }
 
     public ClientHandler(NetworkServer networkServer, Socket socket)  {
         this.networkServer = networkServer;
         this.clientSocket = socket;
+    }
+
+    public String getNickName() {
+        return nickName;
     }
 
     public void run(){
@@ -48,6 +44,7 @@ public class ClientHandler {
                     closeConnection();
                 }
             }).start();
+
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -64,13 +61,13 @@ public class ClientHandler {
 
     private void readMessages() throws IOException {
         while (true){
-                String message = in.readUTF();
-                System.out.printf("От %s : %s%n", nickName, message);
-                if("/end".equals(message)){
-                    return;
-                }
+            String message = in.readUTF();
+            System.out.printf("От %s : %s%n", nickName, message);
+            if("/end".equals(message)){
+                return;
+            }
 
-                networkServer.broadcastMessage(message, this);
+            networkServer.broadcastMessage(message, this);
         }
     }
 
@@ -84,11 +81,11 @@ public class ClientHandler {
                     String password = messageParts[2];
                     String userName = networkServer.getAuthService().getUserNameByLoginAndPassword(userlogin, password);
                     if(userName==null){
-                        System.out.println("Неверный логин и пароль");
-                        sendMessage("Неверный логин и пароль");
+                        System.out.println("Отсутствует учетная запись по данному логину и паролю!");
+                        sendMessage("Отсутствует учетная запись по данному логину и паролю!");
                     }else {
                         nickName = userName;
-                        networkServer.broadcastMessage(nickName + " зашел в чат", this);
+                        networkServer.broadcastMessage(" зашел в чат!", this);
                         sendMessage("/auth " + nickName);//отправим клиенту, что он авторизовался
                         networkServer.subscribe(this);//добавим в список авторизованных
                         break;

@@ -1,5 +1,6 @@
 package ru.geekbrains.java2.client.chatform;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -36,40 +37,28 @@ public class ClientChatController {
     private ClientController controller;
 
     public void sendBtnAction(ActionEvent actionEvent) {
-        String entString = enteredText.getText();
-        if (!entString.isEmpty()) {
-            String ppp = chatArea.getText();
-            //пишем в поле введенный нами текст и контакт сразу пишет ответ
-            chatArea.setText(String.format("%s %n %s: %s %n %s: %s",ppp,"Me",entString, currentContact, "что-то пишет..." ));
-            contactByMessage.put(currentContact, chatArea.getText());
-            enteredText.clear();
+        String message  = enteredText.getText().trim();
+        if (message.isEmpty()) {
+            return;
         }
 
+        String ppp = chatArea.getText();
+        //пишем в поле введенный нами текст и контакт сразу пишет ответ
+        appendOwnMessage(message);
+        controller.sendMessage(message);
+        enteredText.clear();
+
+    }
+
+    private void appendOwnMessage(String message) {
+        appendMessage("Я: " + message);
     }
 
     public void initialize(){
-
-//        contactByMessage.put("Bobby","");
-//        contactByMessage.put("Dobby","");
-//        contactByMessage.put("Robby","");
-//        contactByMessage.put("Mobby","");
-//
-//        List<String> contactArray = new ArrayList<>();
-//        contactByMessage.forEach((contact,contactMessage)->{
-//            contactArray.add(contact);
-//        });
-//        ObservableList<String> contacts = FXCollections.observableArrayList(contactArray);
-//        contactList.setItems(contacts);
-//        contactList.getSelectionModel().select(0);
-//        currentContact = contactList.getSelectionModel().getSelectedItem();
-
     }
 
     public void contactListClicked(MouseEvent mouseEvent) {
-        currentContact = contactList.getSelectionModel().getSelectedItem();
-        if (currentContact!=null){
-            chatArea.setText(contactByMessage.get(currentContact));
-        }
+
     }
 
     public void setController(ClientController controller) {
@@ -77,7 +66,9 @@ public class ClientChatController {
     }
 
     public void appendMessage(String message) {
-        chatArea.appendText(message);
-        chatArea.appendText(System.lineSeparator());
+        Platform.runLater(()-> {
+            chatArea.appendText(message);
+            chatArea.appendText(System.lineSeparator());
+        });
     }
 }

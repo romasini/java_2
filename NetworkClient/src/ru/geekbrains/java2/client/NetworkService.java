@@ -1,5 +1,8 @@
 package ru.geekbrains.java2.client;
 
+import javafx.concurrent.Task;
+import javafx.stage.Stage;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -17,8 +20,6 @@ public class NetworkService {
     private Consumer<String> messageHandler;
     private AuthEvent successfulAuthEvent;
     private String nickname;
-    private String login;
-
 
     public NetworkService(String host, int port) {
         this.host = host;
@@ -32,7 +33,8 @@ public class NetworkService {
         runReadThread();
     }
 
-    private void runReadThread() {
+    public void runReadThread() {
+
         new Thread(() -> {
             while (true) {
                 try {

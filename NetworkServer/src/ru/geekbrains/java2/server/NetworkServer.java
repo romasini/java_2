@@ -14,7 +14,6 @@ public class NetworkServer {
 
     private int port;
     private final List<ClientHandler> clients = new ArrayList<>();
-
     private final AuthService authService;
 
     public NetworkServer(int port){
@@ -25,13 +24,12 @@ public class NetworkServer {
     public void start() {
 
         try(ServerSocket serverSocket = new ServerSocket(port)){
-            System.out.println("Сервер запущен на порту " + port);
+            System.out.println("Сервер был успешно запущен на порту " + port);
             authService.start();
             while (true){
-                System.out.println("Ждем клиента...");
+                System.out.println("Ожидание клиентского подключения...");
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Клиент подключился...");
-                //clients.add(new ClientHandler(this, clientSocket));
                 createClientHandler(clientSocket);
             }
         }catch (IOException e){
@@ -53,8 +51,9 @@ public class NetworkServer {
     }
 
     public synchronized void broadcastMessage(String message, ClientHandler owner) throws IOException {
-        if(message.startsWith("/w ")){
 
+        //адресная отправка
+        if(message.startsWith("/w ")){
             String[] messageParts = message.split("\\s+");
             String messageReceiver = messageParts[1];
             ClientHandler clientReceiver = null;
@@ -67,12 +66,13 @@ public class NetworkServer {
             if(clientReceiver==null){
                 owner.sendMessage("Пользователь не в сети");
             }else {
-                message.replaceFirst(messageParts[0] + " " + messageReceiver, "").trim();
-                clientReceiver.sendMessage(String.format("%s : %s", owner.getNickName(), message));
+                String str = message.replaceFirst(messageParts[0] + " " + messageReceiver, "").trim();
+                clientReceiver.sendMessage(String.format("%s : %s", owner.getNickName(), str));
             }
             return;
         }
 
+        //общая отправка
         for (ClientHandler client: clients) {
             if(client!=owner) client.sendMessage(String.format("%s : %s", owner.getNickName(), message));
         }

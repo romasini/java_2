@@ -35,9 +35,9 @@ public class BaseAuthService implements AuthService{
 
     private static final List<UserData> USER_DATA = new ArrayList<>();//заполним массив
     {
-        USER_DATA.add(new UserData("pers1", "pass1","pers1"));
-        USER_DATA.add(new UserData("pers2", "pass2","pers2"));
-        USER_DATA.add(new UserData("pers3", "pass3","pers3"));
+        USER_DATA.add(new UserData("login1", "pass1","username1"));
+        USER_DATA.add(new UserData("login2", "pass2","username2"));
+        USER_DATA.add(new UserData("login3", "pass3","username3"));
     }
 
     @Override
