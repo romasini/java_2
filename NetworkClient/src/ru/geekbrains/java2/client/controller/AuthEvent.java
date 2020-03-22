@@ -1,4 +1,4 @@
-package ru.geekbrains.java2.client;
+package ru.geekbrains.java2.client.controller;
 
 import java.io.IOException;
 

@@ -1,13 +1,12 @@
-package ru.geekbrains.java2.client.authform;
+package ru.geekbrains.java2.client.view.authform;
 
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import ru.geekbrains.java2.client.ClientController;
+import ru.geekbrains.java2.client.controller.ClientController;
 
 import java.io.IOException;
 
@@ -41,7 +40,7 @@ public class ClientAuthController {
         System.exit(0);
     }
 
-    private void showInfo(String title, String text){
+    public void showInfo(String title, String text){
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
         alert.setHeaderText(null);

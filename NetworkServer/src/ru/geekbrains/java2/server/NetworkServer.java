@@ -1,5 +1,6 @@
 package ru.geekbrains.java2.server;
 
+import ru.geekbrains.java2.client.Command;
 import ru.geekbrains.java2.server.auth.AuthService;
 import ru.geekbrains.java2.server.auth.BaseAuthService;
 import ru.geekbrains.java2.server.client.ClientHandler;
@@ -8,12 +9,22 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 public class NetworkServer {
 
     private int port;
-    private final List<ClientHandler> clients = new ArrayList<>();
+    /*требуется обеспечить потокобезопасность списка клиентов
+    - вариант использовать потокобезопасные коллекции
+    - вариант синхронизировать методы, которые осуществляют запись/чтение коллекции
+     */
+    //private final List<ClientHandler> clients = new ArrayList<>();
+    //private final List<ClientHandler> clients = Collections.synchronizedList(new ArrayList<>());
+    private final List<ClientHandler> clients = new CopyOnWriteArrayList<>();
     private final AuthService authService;
 
     public NetworkServer(int port){
@@ -50,8 +61,14 @@ public class NetworkServer {
         return authService;
     }
 
-    public synchronized void broadcastMessage(String message, ClientHandler owner) throws IOException {
+    public /*synchronized*/ void broadcastMessage(Command message, ClientHandler owner) throws IOException {
+        //общая отправка
+        for (ClientHandler client: clients) {
+            if(client!=owner)
+                client.sendMessage(message);
+        }
 
+        /*
         //адресная отправка
         if(message.startsWith("/w ")){
             String[] messageParts = message.split("\\s+");
@@ -70,19 +87,49 @@ public class NetworkServer {
                 clientReceiver.sendMessage(String.format("%s : %s", owner.getNickName(), str));
             }
             return;
-        }
+        }*/
 
-        //общая отправка
-        for (ClientHandler client: clients) {
-            if(client!=owner) client.sendMessage(String.format("%s : %s", owner.getNickName(), message));
-        }
     }
 
-    public synchronized void subscribe(ClientHandler clientHandler) {
+    public /*synchronized*/ void subscribe(ClientHandler clientHandler) throws IOException {
         clients.add(clientHandler);
+        List<String> users = getAllUsernames();
+        broadcastMessage(Command.updateUsersListCommand(users), null);
     }
 
-    public synchronized void unsubscribe(ClientHandler clientHandler) {
+    public /*synchronized*/ void unsubscribe(ClientHandler clientHandler) throws IOException {
         clients.remove(clientHandler);
+        List<String> users = getAllUsernames();
+        broadcastMessage(Command.updateUsersListCommand(users), null);
     }
+
+    private List<String> getAllUsernames(){
+        /*return clients.stream().//формируем стрим
+                map(client -> client.getNickname()).//преобразуем список в список никнеймов
+                collect(Collectors.toList());//преобразуем в лист обратно*/
+
+        List<String> usernames = new LinkedList<>();
+        for (ClientHandler clientHandler : clients) {
+            usernames.add(clientHandler.getNickname());
+        }
+        return usernames;
+    }
+
+    public /*synchronized*/ void sendMessage(String receiver, Command commandMessage) throws IOException {
+        for(ClientHandler client:clients){
+            if(client.getNickname().equals(receiver)){
+                client.sendMessage(commandMessage);
+            }
+        }
+    }
+
+    public boolean isNicknameBusy(String username){
+        for(ClientHandler client: clients){
+            if (client.getNickname().equals(username)){
+                return true;
+            }
+        }
+        return  false;
+    }
+
 }
