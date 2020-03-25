@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane focusTraversable="true" prefHeight="230.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.java2.client.authform.ClientAuthController">
+<AnchorPane focusTraversable="true" prefHeight="230.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.java2.client.view.authform.ClientAuthController">
    <children>
       <Label alignment="CENTER" layoutY="29.0" prefHeight="29.0" prefWidth="611.0" text="Введите логин и пароль" textAlignment="CENTER" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="29.0">
          <font>

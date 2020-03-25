@@ -2,6 +2,7 @@ package ru.geekbrains.java2.client;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
+import ru.geekbrains.java2.client.controller.ClientController;
 
 import java.io.IOException;
 

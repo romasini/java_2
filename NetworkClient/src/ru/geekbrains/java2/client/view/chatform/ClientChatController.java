@@ -1,22 +1,14 @@
-package ru.geekbrains.java2.client.chatform;
+package ru.geekbrains.java2.client.view.chatform;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.input.MouseEvent;
-import ru.geekbrains.java2.client.ClientController;
+import javafx.scene.control.*;
+import ru.geekbrains.java2.client.controller.ClientController;
 
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class ClientChatController {
 
@@ -24,17 +16,16 @@ public class ClientChatController {
     private TextField enteredText;
 
     @FXML
-    private Button sendButton;
-
-    @FXML
     private TextArea chatArea;
 
     @FXML
-    private ListView<String> contactList;
+    private ListView<String> usersList;
 
-    private Map<String, String> contactByMessage = new HashMap<>();
-    private String currentContact;
     private ClientController controller;
+
+    public void initialize(){
+
+    }
 
     public void sendBtnAction(ActionEvent actionEvent) {
         String message  = enteredText.getText().trim();
@@ -42,23 +33,20 @@ public class ClientChatController {
             return;
         }
 
-        String ppp = chatArea.getText();
         //пишем в поле введенный нами текст и контакт сразу пишет ответ
         appendOwnMessage(message);
-        controller.sendMessage(message);
-        enteredText.clear();
 
+        if(usersList.getSelectionModel().getSelectedIndex() <1){
+            controller.sendMessageToAllUsers(message);
+        }else{
+            String username = usersList.getSelectionModel().getSelectedItem();
+            controller.sendPrivateMessage(username, message);
+        }
+        enteredText.clear();
     }
 
     private void appendOwnMessage(String message) {
         appendMessage("Я: " + message);
-    }
-
-    public void initialize(){
-    }
-
-    public void contactListClicked(MouseEvent mouseEvent) {
-
     }
 
     public void setController(ClientController controller) {
@@ -70,5 +58,20 @@ public class ClientChatController {
             chatArea.appendText(message);
             chatArea.appendText(System.lineSeparator());
         });
+    }
+
+    public void updateUsers(List<String> users) {
+        Platform.runLater(()-> {
+           ObservableList<String> contacts = FXCollections.observableArrayList(users);
+           usersList.setItems(contacts);
+        });
+    }
+
+    public void showInfo(String title, String text){
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(text);
+        alert.showAndWait();
     }
 }
