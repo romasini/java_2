@@ -4,5 +4,5 @@ import java.io.IOException;
 
 @FunctionalInterface
 public interface AuthEvent {
-    void authIsSuccessful(String nickname) throws IOException;
+    void authIsSuccessful(String login, String nickname) throws IOException;
 }

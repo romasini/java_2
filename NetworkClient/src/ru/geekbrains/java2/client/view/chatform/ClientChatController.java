@@ -12,6 +12,7 @@ import java.util.List;
 
 public class ClientChatController {
 
+    public TextField newNickname;
     @FXML
     private TextField enteredText;
 
@@ -73,5 +74,16 @@ public class ClientChatController {
         alert.setHeaderText(null);
         alert.setContentText(text);
         alert.showAndWait();
+    }
+
+    public void changeNickName(ActionEvent actionEvent) {
+        String newNick = newNickname.getText().trim();
+        if (newNick.isEmpty()){
+            showInfo("Ошибка!!", "Новый ник пустой");
+            return;
+        }
+
+        controller.sendChangeNicknameCommand(newNick);
+        newNickname.clear();
     }
 }

@@ -4,11 +4,13 @@ import ru.geekbrains.java2.client.Command;
 import ru.geekbrains.java2.client.CommandType;
 import ru.geekbrains.java2.client.command.AuthCommand;
 import ru.geekbrains.java2.client.command.BroadcastMessageCommand;
+import ru.geekbrains.java2.client.command.ChangeNicknameCommand;
 import ru.geekbrains.java2.client.command.PrivateMessageCommand;
 import ru.geekbrains.java2.server.NetworkServer;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler {
     private final NetworkServer networkServer;
@@ -114,6 +116,24 @@ public class ClientHandler {
                     BroadcastMessageCommand commandData = (BroadcastMessageCommand) command.getData();
                     String message = commandData.getMessage();
                     networkServer.broadcastMessage(Command.messageCommand(nickname, message), this);
+                    break;
+                }
+                case CHANGE_NICKNAME:{
+                    ChangeNicknameCommand commandData = (ChangeNicknameCommand) command.getData();
+                    String login = commandData.getLogin();
+                    String newNickname = commandData.getUsername();
+                    if(networkServer.getAuthService().changeNickname(login, newNickname)){
+                        sendMessage(command);//отправим клиенту, что всё ОК
+                        String message = nickname + " сменил ник на " + newNickname;
+                        nickname = newNickname;
+                        networkServer.broadcastMessage(Command.messageCommand(null, message), this);//уведомим чат, что ник сменен
+                        List<String> users = networkServer.getAllUsernames();
+                        networkServer.broadcastMessage(Command.updateUsersListCommand(users), null);//обновим список контактов
+                    }else {
+                        Command errorCommand = Command.errorCommand("Ошибка при смене ника");
+                        sendMessage(errorCommand);
+                    }
+
                     break;
                 }
                 default:System.err.println("Unknown type of command : " + command.getType());
