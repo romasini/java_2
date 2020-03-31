@@ -24,6 +24,7 @@ public class ClientController {
     private Scene authScene;
     private Scene chatScene;
     private String nickname;
+    private String login;
 
     public ClientController(String serverHost, int serverPort, Stage primaryStage) throws IOException {
 
@@ -50,8 +51,9 @@ public class ClientController {
     }
 
     private void runAuthProcess() throws IOException {
-        networkService.setSuccessfulAuthEvent(nickname -> {
+        networkService.setSuccessfulAuthEvent((login,nickname) -> {
             setUserName(nickname);
+            setLogin(login);
             Platform.runLater(()->{
                 try {
                     openChat();
@@ -76,7 +78,7 @@ public class ClientController {
 
     private void openChat() throws IOException {
 
-        primaryStage.setTitle("Супер чат :" + nickname);
+        primaryStage.setTitle(getTitle());
         primaryStage.setScene(chatScene);
         primaryStage.setIconified(false);
         primaryStage.show();
@@ -90,6 +92,10 @@ public class ClientController {
 
     private void setUserName(String nickname) {
         this.nickname = nickname;
+    }
+
+    public void setLogin(String login) {
+        this.login = login;
     }
 
     private void connectToServer() throws IOException {
@@ -122,6 +128,10 @@ public class ClientController {
         return nickname;
     }
 
+    public String getLogin() {
+        return login;
+    }
+
     public void sendPrivateMessage(String username, String message){
         try {
             networkService.sendCommand(Command.privateMessageCommand(username, message));
@@ -145,5 +155,27 @@ public class ClientController {
         users.remove(nickname);
         users.add(0, "All");
         if(chatController != null)  chatController.updateUsers(users);
+    }
+
+    public void sendChangeNicknameCommand(String newNick) {
+        try{
+            networkService.sendCommand(Command.changeNicknameCommand(getLogin(), newNick));
+        } catch (IOException e) {
+            chatController.showInfo("Ошибка!!!",e.getMessage());
+        }
+
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+        Platform.runLater(()->{
+            primaryStage.setTitle(getTitle());
+            chatController.showInfo("Успех", "Ник успешно изменен");
+        });
+
+    }
+
+    private String getTitle(){
+        return "Супер чат :" + nickname;
     }
 }

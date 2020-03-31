@@ -103,7 +103,7 @@ public class NetworkServer {
         broadcastMessage(Command.updateUsersListCommand(users), null);
     }
 
-    private List<String> getAllUsernames(){
+    public List<String> getAllUsernames(){
         /*return clients.stream().//формируем стрим
                 map(client -> client.getNickname()).//преобразуем список в список никнеймов
                 collect(Collectors.toList());//преобразуем в лист обратно*/
