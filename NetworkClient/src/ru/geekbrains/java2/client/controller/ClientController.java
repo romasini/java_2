@@ -11,8 +11,9 @@ import ru.geekbrains.java2.client.model.NetworkService;
 import ru.geekbrains.java2.client.view.authform.ClientAuthController;
 import ru.geekbrains.java2.client.view.chatform.ClientChatController;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ClientController {
 
@@ -25,6 +26,7 @@ public class ClientController {
     private Scene chatScene;
     private String nickname;
     private String login;
+    private final static int MAX_OLD_MESSAGE = 5;
 
     public ClientController(String serverHost, int serverPort, Stage primaryStage) throws IOException {
 
@@ -87,7 +89,42 @@ public class ClientController {
             System.exit(0);
         });
 
-        networkService.setMessageHandler(chatController::appendMessage);
+        appendOldChat();
+
+        networkService.setMessageHandler(message -> {
+            chatController.appendMessage(message);
+            writeHistory(message);
+        });
+    }
+
+    private void appendOldChat(){
+        String filename = String.format("history_%s.txt",getLogin());
+        File file = new File(filename);
+        if (!file.exists()) return;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))){
+            List<String> ls = reader.lines().collect(Collectors.toList());
+
+            int startCount = ls.size() > MAX_OLD_MESSAGE? ls.size()-MAX_OLD_MESSAGE:0;
+            for (int i = startCount; i< ls.size();i++){
+                chatController.appendMessage(ls.get(i));
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private void writeHistory(String message){
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(String.format("history_%s.txt",getLogin()), true))) {
+            writer.newLine();
+            writer.write(message);
+        } catch (IOException e) {
+            showErrorMessage("Ошибка при записи файла истории");
+        }
+
+
     }
 
     private void setUserName(String nickname) {
@@ -114,6 +151,7 @@ public class ClientController {
     public void sendMessageToAllUsers(String message) {
         try {
             networkService.sendCommand(Command.broadcastMessageCommand(message));
+            writeHistory("Я: " + message);
         } catch (IOException e) {
             chatController.showInfo("Ошибка!!!", "Failed to send message!");
             e.printStackTrace();
@@ -135,6 +173,7 @@ public class ClientController {
     public void sendPrivateMessage(String username, String message){
         try {
             networkService.sendCommand(Command.privateMessageCommand(username, message));
+            writeHistory("Я: " + message);
         } catch (IOException e) {
             chatController.showInfo("Ошибка!!!",e.getMessage());
         }

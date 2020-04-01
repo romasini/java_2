@@ -10,12 +10,15 @@ import ru.geekbrains.java2.server.NetworkServer;
 
 import java.io.*;
 import java.net.Socket;
+import java.sql.*;
+import java.util.Arrays;
 import java.util.List;
 
 public class ClientHandler {
     private final NetworkServer networkServer;
     private final Socket clientSocket;
     private static final int TIMEOUT = 30;
+    private static final String MASK_WORD = "***";
 
     private ObjectInputStream in;
     private ObjectOutputStream out;
@@ -96,6 +99,38 @@ public class ClientHandler {
         }
     }
 
+    private String deleteCursWords(String message){
+        Connection connection = null;
+        try {
+            Class.forName("org.sqlite.JDBC");
+            connection = DriverManager.getConnection("jdbc:sqlite:users.s3db");
+            //statement.setArray(1, connection.createArrayOf("STRING", words));//sqlite не реализует setArray и createArrayOf
+            String[] words = message.split("\\s+");
+            for (String word: words){
+                PreparedStatement statement = connection.prepareStatement("SELECT word FROM curse_words where word = ?;");
+                statement.setString(1, word);
+                ResultSet resultSet = statement.executeQuery();
+                if(resultSet.next()){
+                    message = message.replaceAll(resultSet.getString("word"), MASK_WORD);
+                }
+            }
+
+            return message;
+        } catch (Exception e) {
+            System.out.println("Ошибка подключения к базе!");
+            e.printStackTrace();
+            return message;
+
+        }finally {
+            try {
+                if(connection!=null) {connection.close();}
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     private void readMessages() throws IOException {
         while (true){
             Command command = readCommand();
@@ -109,12 +144,14 @@ public class ClientHandler {
                     PrivateMessageCommand commandData = (PrivateMessageCommand) command.getData();
                     String receiver = commandData.getReceiver();
                     String message = commandData.getMessage();
+                    message = deleteCursWords(message);
                     networkServer.sendMessage(receiver, Command.messageCommand(nickname, message));
                     break;
                 }
                 case BROADCAST_MESSAGE:{
                     BroadcastMessageCommand commandData = (BroadcastMessageCommand) command.getData();
                     String message = commandData.getMessage();
+                    message = deleteCursWords(message);
                     networkServer.broadcastMessage(Command.messageCommand(nickname, message), this);
                     break;
                 }
