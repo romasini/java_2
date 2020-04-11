@@ -13,6 +13,8 @@ import java.net.Socket;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ClientHandler {
     private final NetworkServer networkServer;
@@ -43,6 +45,29 @@ public class ClientHandler {
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
+            ExecutorService executorService = Executors.newFixedThreadPool(2);
+            executorService.execute(()->{
+                try {
+                    authentication();
+                    readMessages();
+                }catch (IOException e){
+                    System.out.println("Соединение с клиентом " + nickname + " было закрыто!");
+                } finally {
+                    closeConnection();
+                }
+            });
+
+            executorService.execute(()->{
+                try {
+                    closeByTimeout();
+                } catch (InterruptedException e) {
+                    System.out.println("Ошибка с отсчетом таймаута");
+                } catch (IOException e) {
+                    System.out.println("Соединение с клиентом " + nickname + " было закрыто!");
+                }
+            });
+
+            /*
             new Thread(()->{
                 try {
                     authentication();
@@ -62,7 +87,9 @@ public class ClientHandler {
                 } catch (IOException e) {
                     System.out.println("Соединение с клиентом " + nickname + " было закрыто!");
                 }
-            }).start();
+            }).start();*/
+
+            executorService.shutdown();
 
         }catch (IOException e){
             e.printStackTrace();
@@ -84,7 +111,6 @@ public class ClientHandler {
             sendMessage(Command.authErrorCommand("Истекло время ожидания. Соединение закрыто!"));
             closeConnection();
         }
-        return;
     }
 
     private Command readCommand() throws IOException {
