@@ -15,8 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ClientHandler {
+    private static final Logger LOGGER = Logger.getLogger(ClientHandler.class.getName());
     private final NetworkServer networkServer;
     private final Socket clientSocket;
     private static final int TIMEOUT = 30;
@@ -51,7 +54,8 @@ public class ClientHandler {
                     authentication();
                     readMessages();
                 }catch (IOException e){
-                    System.out.println("Соединение с клиентом " + nickname + " было закрыто!");
+                    //System.out.println("Соединение с клиентом " + nickname + " было закрыто!");
+                    LOGGER.log(Level.WARNING, "Соединение с клиентом " + nickname + " было закрыто!");
                 } finally {
                     closeConnection();
                 }
@@ -61,9 +65,11 @@ public class ClientHandler {
                 try {
                     closeByTimeout();
                 } catch (InterruptedException e) {
-                    System.out.println("Ошибка с отсчетом таймаута");
+                    //System.out.println("Ошибка с отсчетом таймаута");
+                    LOGGER.log(Level.SEVERE, "Ошибка с отсчетом таймаута", e);
                 } catch (IOException e) {
-                    System.out.println("Соединение с клиентом " + nickname + " было закрыто!");
+                    //System.out.println("Соединение с клиентом " + nickname + " было закрыто!");
+                    LOGGER.log(Level.WARNING, "Соединение с клиентом " + nickname + " было закрыто!");
                 }
             });
 
@@ -118,8 +124,9 @@ public class ClientHandler {
             return (Command) in.readObject();
         } catch (ClassNotFoundException e) {
             String errorMessage = "Unknown type of object from client!";
-            System.err.println(errorMessage);
-            e.printStackTrace();
+//            System.err.println(errorMessage);
+//            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, errorMessage, e);
             sendMessage(Command.errorCommand(errorMessage));
             return null;
         }
@@ -143,15 +150,18 @@ public class ClientHandler {
 
             return message;
         } catch (Exception e) {
-            System.out.println("Ошибка подключения к базе!");
-            e.printStackTrace();
+
+//            System.out.println("Ошибка подключения к базе!");
+//            e.printStackTrace();
+            LOGGER.log(Level.SEVERE, "Ошибка подключения к базе!", e);
             return message;
 
         }finally {
             try {
                 if(connection!=null) {connection.close();}
             } catch (SQLException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                LOGGER.log(Level.SEVERE, "Ошибка работы с базой!", e);
             }
         }
 
@@ -199,7 +209,7 @@ public class ClientHandler {
 
                     break;
                 }
-                default:System.err.println("Unknown type of command : " + command.getType());
+                default:LOGGER.log(Level.SEVERE, "Unknown type of command : " + command.getType());//System.err.println("Unknown type of command : " + command.getType());
             }
 
             /*String message = in.readUTF();
@@ -223,7 +233,8 @@ public class ClientHandler {
                         return;
                     }
                 }else{
-                    System.err.println("Unknown type of command for auth process: " + command.getType());
+                    //System.err.println("Unknown type of command for auth process: " + command.getType());
+                    LOGGER.log(Level.SEVERE,"Unknown type of command for auth process: " + command.getType());
                 }
             }
 
